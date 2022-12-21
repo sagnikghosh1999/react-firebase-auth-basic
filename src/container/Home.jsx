@@ -1,10 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import { useUserAuth } from "../context/userAuthContext";
 
 const Home = () => {
   const { logOut, user } = useUserAuth();
-  console.log(user);
+  // console.log(user);
   const navigate = useNavigate();
   const handleLogout = async () => {
     try {
@@ -16,7 +17,8 @@ const Home = () => {
   };
   return (
     <>
-      <div className="p-4 text-lg mt-3 text-center">
+      <Navbar />
+      <div className="mt-28 p-4 text-lg text-center">
         Hello Welcome <br />
         <code>{user.email}</code>
       </div>

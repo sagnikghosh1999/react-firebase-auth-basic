@@ -1,14 +1,20 @@
 import React, { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUserAuth } from "../context/userAuthContext";
 import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import { signUp } from "../firebase/firebaseUtils";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const { signUp } = useUserAuth();
+  // const { signUp } = useUserAuth();
 
   const [loading, setLoading] = useState(false);
 
@@ -16,10 +22,39 @@ const Signup = () => {
 
   const navigate = useNavigate();
 
+  if (error) {
+    setTimeout(() => {
+      setError("");
+    }, 5000);
+  }
+
+  function validateInputs(email, password, confirmPassword) {
+    if (password !== confirmPassword) {
+      setError("Passwords Doesn't Match");
+      return false;
+    }
+    if (password.length < 6) {
+      setError("Password should be 6 charcters long !!");
+      return false;
+    }
+    const mailformat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (mailformat.test(email)) {
+      return true;
+    } else {
+      setError("Invalid Email");
+      return false;
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(email, password);
     setLoading(true);
+
+    if (!validateInputs(email, password, confirmPassword)) {
+      setLoading(false);
+      return;
+    }
 
     try {
       await signUp(email, password);
@@ -29,9 +64,6 @@ const Signup = () => {
     } catch (error) {
       setError(error.message.slice(9));
       setLoading(false);
-      setTimeout(() => {
-        setError("");
-      }, 5000);
     }
   };
 
@@ -91,7 +123,7 @@ const Signup = () => {
 
               <div className="relative z-0 my-6 lg:my-8">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="block py-2.5  w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-green-600 peer px-2"
@@ -103,11 +135,23 @@ const Signup = () => {
                 >
                   Password
                 </label>
+                <div
+                  className="text-green-500  absolute right-2 top-2 cursor-pointer"
+                  onClick={() => {
+                    setShowPassword((prev) => !prev);
+                  }}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-6 w-6" />
+                  ) : (
+                    <EyeIcon className="h-6 w-6" />
+                  )}
+                </div>
               </div>
 
               <div className="relative z-0 my-6 lg:my-8">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   id="confirmPassword"
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="block py-2.5  w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-green-600 peer px-2"
@@ -119,6 +163,18 @@ const Signup = () => {
                 >
                   Confirm Password
                 </label>
+                <div
+                  className="text-green-500  absolute right-2 top-2 cursor-pointer"
+                  onClick={() => {
+                    setShowConfirmPassword((prev) => !prev);
+                  }}
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="h-6 w-6" />
+                  ) : (
+                    <EyeIcon className="h-6 w-6" />
+                  )}
+                </div>
               </div>
 
               <p className=" text-sm mt-5 text-white">

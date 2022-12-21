@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUserAuth } from "../context/userAuthContext";
 import { InformationCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import { logIn } from "../firebase/firebaseUtils";
 
 const Login = () => {
   const [email, setEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [password, setPassword] = useState("");
 
-  const { logIn } = useUserAuth();
+  // const { logIn } = useUserAuth();
 
   const [loading, setLoading] = useState(false);
 
@@ -15,10 +19,33 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  function ValidateEmail(mail) {
+    const mailformat = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (mailformat.test(mail)) {
+      return true;
+    }
+    return false;
+  }
+  if (error) {
+    setTimeout(() => {
+      setError("");
+    }, 5000);
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(email, password);
     setLoading(true);
+
+    if (!ValidateEmail(email)) {
+      setLoading(false);
+      return setError("Invalid Email address !!");
+    }
+
+    if (password.length < 6) {
+      setLoading(false);
+      return setError("Password should be 6 charcters long !!");
+    }
 
     try {
       await logIn(email, password);
@@ -28,9 +55,6 @@ const Login = () => {
     } catch (error) {
       setError(error.message.slice(9));
       setLoading(false);
-      setTimeout(() => {
-        setError("");
-      }, 5000);
     }
   };
 
@@ -93,7 +117,7 @@ const Login = () => {
 
               <div className="relative z-0 my-6 lg:my-8">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
                   onChange={(e) => setPassword(e.target.value)}
                   className="block py-2.5  w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none  focus:outline-none focus:ring-0 focus:border-green-600 peer px-2"
@@ -105,6 +129,18 @@ const Login = () => {
                 >
                   Password
                 </label>
+                <div
+                  className="text-green-500  absolute right-2 top-2 cursor-pointer"
+                  onClick={() => {
+                    setShowPassword((prev) => !prev);
+                  }}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-6 w-6" />
+                  ) : (
+                    <EyeIcon className="h-6 w-6" />
+                  )}
+                </div>
               </div>
 
               <p className=" text-sm mt-5 text-white">
@@ -114,7 +150,7 @@ const Login = () => {
               </p>
               <button
                 type="submit"
-                className="bg-white bg-opacity-50 hover:bg-opacity-80 rounded-lg text-green-900 w-full font-semibold text-lg py-[6px] my-5 uppercase"
+                className="bg-white bg-opacity-50 hover:bg-opacity-80 rounded-lg text-green-900 w-full font-semibold text-lg py-[6px] my-5 uppercase duration-150"
               >
                 {loading !== true ? "Login" : "Loading..."}{" "}
               </button>
